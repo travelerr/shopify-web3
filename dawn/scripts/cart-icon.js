@@ -1,7 +1,7 @@
-import ReactDOM from "react-dom";
 import React from "react";
-import { CartIcon } from "./Components/CartIcon";
+import { createRoot } from "react-dom/client";
+import CartIcon from "./Components/CartIcon";
 
-const rootEl = document.getElementById("react-icon-cart");
-
-rootEl && ReactDOM.render(rootEl);
+const rootElement = document.getElementById("react-icon-cart");
+const root = createRoot(rootElement);
+root.render(<CartIcon />);

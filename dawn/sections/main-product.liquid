@@ -447,6 +447,7 @@
                     {%- if block.settings.show_dynamic_checkout -%}
                       {{ form | payment_button }}
                     {%- endif -%}
+                    {%- render 'decent-data-minter' -%}
                   </div>
                 {%- endform -%}
               </product-form>
