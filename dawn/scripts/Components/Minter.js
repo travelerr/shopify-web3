@@ -1,5 +1,5 @@
 import React from "react";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { mintNFT } from "../utils/interact.js";
 import { create } from "ipfs-http-client";
 
@@ -18,28 +18,66 @@ export default function Minter(props) {
   const [url, setURL] = useState("");
   const [uploadedData, setUploadedData] = useState(null);
   const [multiFileChecked, setMultiFileChecked] = useState(false);
-  const [urlArr, setUrlArr] = useState([]);
 
   const { walletAddress, connectWalletPressed } = props;
   const fileUploadRef = useRef(null);
 
-  useEffect(() => {
-    if (fileUploadRef.current !== null && multiFileChecked) {
-      fileUploadRef.current.setAttribute("directory", "");
-      fileUploadRef.current.setAttribute("multiple", "");
-      fileUploadRef.current.setAttribute("webkitdirectory", "");
-    } else {
-      fileUploadRef.current.removeAttribute("directory");
-      fileUploadRef.current.removeAttribute("multiple");
-      fileUploadRef.current.removeAttribute("webkitdirectory");
-    }
-  }, [multiFileChecked]);
+  // useEffect(() => {
+  //   if (fileUploadRef.current !== null && multiFileChecked) {
+  //     fileUploadRef.current.setAttribute("directory", "");
+  //     fileUploadRef.current.setAttribute("multiple", "");
+  //     fileUploadRef.current.setAttribute("webkitdirectory", "");
+  //   } else {
+  //     fileUploadRef.current.removeAttribute("directory");
+  //     fileUploadRef.current.removeAttribute("multiple");
+  //     fileUploadRef.current.removeAttribute("webkitdirectory");
+  //   }
+  // }, [multiFileChecked]);
+  // const retrieveFile = (e) => {
+  //   console.log(e);
+  //   const data = e.target.files[0];
+  //   const reader = new window.FileReader();
+  //   if (data) {
+  //     reader.readAsArrayBuffer(data);
+  //     reader.onloadend = () => {
+  //       const buffer = reader.result;
+  //       setUploadedData(Buffer.from(buffer));
+  //       console.log("Buffer data: ", Buffer.from(buffer));
+  //     };
+  //     e.preventDefault();
+  //   }
+  // };
+  // const handleMultiFileCheckChange = () => {
+  //   setMultiFileChecked(!multiFileChecked);
+  // };
+  // <div>
+  // <h2>💾 Upload Your Data:</h2>
+  // <div className="mb-3">
+  //   <input
+  //     type="checkbox"
+  //     id="account"
+  //     className="form-check-input mr-2 flex-shrink-0"
+  //     checked={multiFileChecked}
+  //     style={{ marginRight: "10px" }}
+  //     onChange={handleMultiFileCheckChange}
+  //   />
+  //   <label>Uploading More Than One File?</label>
+  // </div>
+  // <input
+  //   className="form-control form-control-lg"
+  //   id="formFileLg"
+  //   type="file"
+  //   onChange={retrieveFile}
+  //   ref={fileUploadRef}
+  // />
+  // </div>
 
   const onMintPressed = async () => {
     if (!walletAddress) {
       setStatus("You must connect a wallet first!");
       return;
     }
+    getFileByTagAndSendToIPFS();
     const created = await client.add(uploadedData, {
       pin: true, // <-- this is the default
     });
@@ -62,20 +100,42 @@ export default function Minter(props) {
     }
   };
 
-  const retrieveFile = (e) => {
-    console.log(e);
-    const data = e.target.files[0];
+  async function getFileByTagAndSendToIPFS() {
+    const img = document.getElementById("decent-data-image-tag");
+    const blob = await loadXHR(img.src);
     const reader = new window.FileReader();
-    if (data) {
-      reader.readAsArrayBuffer(data);
+    if (blob) {
+      reader.readAsArrayBuffer(blob);
       reader.onloadend = () => {
         const buffer = reader.result;
         setUploadedData(Buffer.from(buffer));
         console.log("Buffer data: ", Buffer.from(buffer));
       };
-      e.preventDefault();
     }
-  };
+  }
+
+  function loadXHR(url) {
+    return new Promise(function (resolve, reject) {
+      try {
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", url);
+        xhr.responseType = "blob";
+        xhr.onerror = function () {
+          reject("Network error.");
+        };
+        xhr.onload = function () {
+          if (xhr.status === 200) {
+            resolve(xhr.response);
+          } else {
+            reject("Loading error:" + xhr.statusText);
+          }
+        };
+        xhr.send();
+      } catch (err) {
+        reject(err.message);
+      }
+    });
+  }
 
   const handleMultiFileCheckChange = () => {
     setMultiFileChecked(!multiFileChecked);
@@ -108,27 +168,6 @@ export default function Minter(props) {
             <div className="col-xl-7 col-md-8 offset-xl-1">
               <form className="needs-validation" noValidate>
                 <div className="col-sm-12 mb-4">
-                  <div>
-                    <h2>💾 Upload Your Data:</h2>
-                    <div className="mb-3">
-                      <input
-                        type="checkbox"
-                        id="account"
-                        className="form-check-input mr-2 flex-shrink-0"
-                        checked={multiFileChecked}
-                        style={{ marginRight: "10px" }}
-                        onChange={handleMultiFileCheckChange}
-                      />
-                      <label>Uploading More Than One File?</label>
-                    </div>
-                    <input
-                      className="form-control form-control-lg"
-                      id="formFileLg"
-                      type="file"
-                      onChange={retrieveFile}
-                      ref={fileUploadRef}
-                    />
-                  </div>
                   <div className="col-sm-12 mb-4">
                     <h2>🤔 Give it a Name:</h2>
                     <input

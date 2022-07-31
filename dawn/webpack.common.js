@@ -5,7 +5,6 @@ const NodePolyfillPlugin = require("node-polyfill-webpack-plugin");
 
 module.exports = {
   entry: {
-    "cart-icon": "./scripts/cart-icon.js",
     "decent-data-minter": "./scripts/decent-data-minter.js",
   },
   module: {
