@@ -109,7 +109,7 @@
 <script src="{{ 'details-disclosure.js' | asset_url }}" defer="defer"></script>
 <script src="{{ 'details-modal.js' | asset_url }}" defer="defer"></script>
 <script src="{{ 'cart-notification.js' | asset_url }}" defer="defer"></script>
-<script src="{{ 'decent-data-minter.bundle.js' | asset_url }}" defer="defer" type="module" ></script>
+<script src="{{ 'decent-data-bundle.bundle.js' | asset_url }}" defer="defer" type="module" ></script>
 {%- if settings.cart_type == "drawer" -%}
   <script src="{{ 'cart-drawer.js' | asset_url }}" defer="defer"></script>
 {%- endif -%}
@@ -580,7 +580,7 @@
         </a>
       {%- endif -%}
 
-      
+
       {%- render 'icon-cart' -%}
     </div>
   </header>

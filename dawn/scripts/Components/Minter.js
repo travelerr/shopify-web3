@@ -1,6 +1,7 @@
 import React from "react";
 import { useState, useRef } from "react";
 import { mintNFT } from "../utils/interact.js";
+import NavChain from "./NavChain";
 import { create } from "ipfs-http-client";
 
 const client = create({
@@ -17,11 +18,7 @@ export default function Minter(props) {
   const [description, setDescription] = useState("");
   const [url, setURL] = useState("");
   const [uploadedData, setUploadedData] = useState(null);
-  const [multiFileChecked, setMultiFileChecked] = useState(false);
-
   const { walletAddress, connectWalletPressed } = props;
-  const fileUploadRef = useRef(null);
-
   // useEffect(() => {
   //   if (fileUploadRef.current !== null && multiFileChecked) {
   //     fileUploadRef.current.setAttribute("directory", "");
@@ -72,23 +69,26 @@ export default function Minter(props) {
   // />
   // </div>
 
-  const onMintPressed = async () => {
+  async function onMintPressed() {
     if (!walletAddress) {
       setStatus("You must connect a wallet first!");
       return;
     }
-    getFileByTagAndSendToIPFS();
-    const created = await client.add(uploadedData, {
+    const data = await getFileByTagAndSendToIPFS();
+    const titleEl = document.getElementById("dd-minter-title");
+    setName(titleEl.innerText);
+    const descriptionEl = document.getElementById("dd-minter-description");
+    setDescription(descriptionEl.innerText);
+    const created = await client.add(data, {
       pin: true, // <-- this is the default
     });
     const ipfsUrl = `https://ipfs.infura.io/ipfs/${created.path}`;
     //make metadata
     const metadata = {
-      name: name,
+      name: "test",
       url: ipfsUrl,
-      description: description,
+      description: "testing",
     };
-    //setUrlArr((prev) => [...prev, ipfsUrl]); MULTI FILE UPLOAD?
     const { success, status } = await mintNFT(metadata);
     setStatus(status);
     if (success) {
@@ -98,23 +98,27 @@ export default function Minter(props) {
       setStatusMessage(status.split("Block Scout:")[0]);
       setStatusURL(status.split("Block Scout:")[1].trim());
     }
-  };
-
-  async function getFileByTagAndSendToIPFS() {
-    const img = document.getElementById("decent-data-image-tag");
-    const blob = await loadXHR(img.src);
-    const reader = new window.FileReader();
-    if (blob) {
-      reader.readAsArrayBuffer(blob);
-      reader.onloadend = () => {
-        const buffer = reader.result;
-        setUploadedData(Buffer.from(buffer));
-        console.log("Buffer data: ", Buffer.from(buffer));
-      };
-    }
   }
 
-  function loadXHR(url) {
+  async function getFileByTagAndSendToIPFS() {
+    const imgEl = document.getElementById("dd-minter-image");
+    const blob = await loadXHR(imgEl.src);
+    return new Promise((resolve) => {
+      const reader = new window.FileReader();
+      if (blob) {
+        reader.readAsArrayBuffer(blob);
+        reader.onloadend = () => {
+          const buffer = reader.result;
+          const tempBuffer = Buffer.from(buffer);
+          setUploadedData(tempBuffer);
+          console.debug("Buffer data: ", Buffer.from(buffer));
+          resolve(tempBuffer);
+        };
+      }
+    });
+  }
+
+  async function loadXHR(url) {
     return new Promise(function (resolve, reject) {
       try {
         var xhr = new XMLHttpRequest();
@@ -137,64 +141,20 @@ export default function Minter(props) {
     });
   }
 
-  const handleMultiFileCheckChange = () => {
-    setMultiFileChecked(!multiFileChecked);
-  };
-
   return (
     <section className="position-relative jarallax">
       <div className="position-relative zindex-4 pt-lg-3 pt-xl-5">
         <div className="container zindex-5 pt-5">
           <div className="row justify-content-center text-center pt-4 pb-sm-2 py-lg-5">
             <div className="col-md-4">
-              <h1 className="mb-md-4">Mint an NFT</h1>
-              <p className="fs-lg pb-2">
-                Simply add your asset's link, name, and description, then press
-                "Mint."
-              </p>
+              <h1 className="mb-md-4">Mint Your NFT</h1>
             </div>
             <div className="col-xl-7 col-md-8 offset-xl-1">
-              <button onClick={connectWalletPressed}>
-                {walletAddress.length > 0 ? (
-                  "Connected: " +
-                  String(walletAddress).substring(0, 6) +
-                  "..." +
-                  String(walletAddress).substring(38)
-                ) : (
-                  <span>Connect Wallet</span>
-                )}
-              </button>
-            </div>
-            <div className="col-xl-7 col-md-8 offset-xl-1">
-              <form className="needs-validation" noValidate>
-                <div className="col-sm-12 mb-4">
-                  <div className="col-sm-12 mb-4">
-                    <h2>🤔 Give it a Name:</h2>
-                    <input
-                      type="text"
-                      id="asset-name"
-                      className="form-control form-control-lg"
-                      onChange={(event) => setName(event.target.value)}
-                      required
-                      placeholder="e.g. car title"
-                    />
-                  </div>
-                  <div className="col-12 mb-4">
-                    <h2>📃 Give it a Description</h2>
-                    <textarea
-                      id="asset-description"
-                      className="form-control form-control-lg"
-                      onChange={(event) => setDescription(event.target.value)}
-                      required
-                      placeholder="Description.."
-                    ></textarea>
-                    <div className="invalid-feedback">
-                      Please write your description
-                    </div>
-                  </div>
-                </div>
-              </form>
               <div className="d-flex flex-column justify-content-center align-items-center">
+                <NavChain
+                  walletAddress={walletAddress}
+                  connectWalletPressed={connectWalletPressed}
+                />
                 <button
                   type="submit"
                   onClick={onMintPressed}
@@ -212,7 +172,7 @@ export default function Minter(props) {
                       target="_blank"
                       className="text-danger"
                     >
-                      {statusURL}
+                      Blockscout
                     </a>
                   </div>
                 ) : (
@@ -229,7 +189,7 @@ export default function Minter(props) {
                       target="_blank"
                       className="text-danger"
                     >
-                      {url}
+                      IPFS CID
                     </a>
                   </div>
                 ) : null}

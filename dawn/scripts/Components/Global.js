@@ -2,6 +2,7 @@ import React from "react";
 import Minter from "./Minter";
 import { useState, useEffect } from "react";
 import { connectWallet, getCurrentWalletConnected } from "../utils/interact";
+import NavChain from "./NavChain";
 
 export default function Global() {
   const [walletAddress, setWallet] = useState("");

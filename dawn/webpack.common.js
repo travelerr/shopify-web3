@@ -1,11 +1,10 @@
 const path = require("path");
-var webpack = require("webpack");
 const Dotenv = require("dotenv-webpack");
 const NodePolyfillPlugin = require("node-polyfill-webpack-plugin");
 
 module.exports = {
   entry: {
-    "decent-data-minter": "./scripts/decent-data-minter.js",
+    "decent-data-bundle": "./scripts/decent-data-minter.js",
   },
   module: {
     rules: [
